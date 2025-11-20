@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oregon Trail - Generador de Sprites Simple</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .sprite-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 3px solid #dee2e6;
+            transition: all 0.3s;
+        }
+        
+        .sprite-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-color: #667eea;
+        }
+        
+        .sprite-card h3 {
+            margin-bottom: 15px;
+            color: #495057;
+            font-size: 1.3em;
+            text-align: center;
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto 15px;
+            border: 2px solid #ced4da;
+            background: #fff;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+        
+        button:active {
+            transform: scale(0.95);
+        }
+        
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.2);
+            border-color: #667eea;
+        }
+        
+        .color-option.selected {
+            border-color: #000;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        
+        .info {
+            background: #e7f5ff;
+            border-left: 4px solid #1c7ed6;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        
+        .info h4 {
+            margin-bottom: 10px;
+            color: #1864ab;
+        }
+        
+        .info ul {
+            margin-left: 20px;
+            color: #495057;
+        }
+        
+        .info li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Oregon Trail - Generador de Sprites</h1>
+        <p class="subtitle">Crea sprites simples para tu juego. Haz clic en el canvas para dibujar píxeles.</p>
+        
+        <div class="grid">
+            <!-- JUGADOR -->
+            <div class="sprite-card">
+                <h3>🎮 Jugador</h3>
+                <canvas id="playerCanvas" width="160" height="160"></canvas>
+                <div class="color-picker" id="playerColors"></div>
+                <div class="controls">
+                    <button onclick="clearCanvas('playerCanvas')">Limpiar</button>
+                    <button onclick="drawPlayerDefault()">Sprite por Defecto</button>
+                    <button onclick="downloadSprite('playerCanvas', 'player_idle.png')">Descargar PNG</button>
+                </div>
+            </div>
+            
+            <!-- ENEMIGO -->
+            <div class="sprite-card">
+                <h3>👾 Enemigo</h3>
+                <canvas id="enemyCanvas" width="140" height="140"></canvas>
+                <div class="color-picker" id="enemyColors"></div>
+                <div class="controls">
+                    <button onclick="clearCanvas('enemyCanvas')">Limpiar</button>
+                    <button onclick="drawEnemyDefault()">Sprite por Defecto</button>
+                    <button onclick="downloadSprite('enemyCanvas', 'enemy_bandit.png')">Descargar PNG</button>
+                </div>
+            </div>
+            
+            <!-- COMIDA -->
+            <div class="sprite-card">
+                <h3>🍖 Comida</h3>
+                <canvas id="foodCanvas" width="80" height="80"></canvas>
+                <div class="color-picker" id="foodColors"></div>
+                <div class="controls">
+                    <button onclick="clearCanvas('foodCanvas')">Limpiar</button>
+                    <button onclick="drawFoodDefault()">Sprite por Defecto</button>
+                    <button onclick="downloadSprite('foodCanvas', 'food.png')">Descargar PNG</button>
+                </div>
+            </div>
+            
+            <!-- MEDICINA -->
+            <div class="sprite-card">
+                <h3>💊 Medicina</h3>
+                <canvas id="medicineCanvas" width="80" height="80"></canvas>
+                <div class="color-picker" id="medicineColors"></div>
+                <div class="controls">
+                    <button onclick="clearCanvas('medicineCanvas')">Limpiar</button>
+                    <button onclick="drawMedicineDefault()">Sprite por Defecto</button>
+                    <button onclick="downloadSprite('medicineCanvas', 'medicine.png')">Descargar PNG</button>
+                </div>
+            </div>
+            
+            <!-- CORAZÓN -->
+            <div class="sprite-card">
+                <h3>❤ Corazón</h3>
+                <canvas id="heartCanvas" width="96" height="96"></canvas>
+                <div class="color-picker" id="heartColors"></div>
+                <div class="controls">
+                    <button onclick="clearCanvas('heartCanvas')">Limpiar</button>
+                    <button onclick="drawHeartDefault()">Sprite por Defecto</button>
+                    <button onclick="downloadSprite('heartCanvas', 'heart_full.png')">Descargar PNG</button>
+                </div>
+            </div>
+            
+            <!-- RETÍCULA -->
+            <div class="sprite-card">
+                <h3>🎯 Retícula</h3>
+                <canvas id="reticleCanvas" width="160" height="160"></canvas>
+                <div class="color-picker" id="reticleColors"></div>
+                <div class="controls">
+                    <button onclick="clearCanvas('reticleCanvas')">Limpiar</button>
+                    <button onclick="drawReticleDefault()">Sprite por Defecto</button>
+                    <button onclick="downloadSprite('reticleCanvas', 'reticle.png')">Descargar PNG</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info">
+            <h4>📝 Instrucciones:</h4>
+            <ul>
+                <li><strong>Dibujar:</strong> Haz clic en el canvas para pintar píxeles</li>
+                <li><strong>Cambiar color:</strong> Selecciona un color de la paleta</li>
+                <li><strong>Sprites por defecto:</strong> Usa los botones para ver ejemplos</li>
+                <li><strong>Descargar:</strong> Guarda tu sprite como PNG</li>
+                <li><strong>Tamaño:</strong> Los sprites se escalan automáticamente (4x pixel art)</li>
+                <li><strong>Ubicación:</strong> Guarda los PNG en <code>src/main/resources/sprites/</code></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Configuración
+        const canvases = ['playerCanvas', 'enemyCanvas', 'foodCanvas', 'medicineCanvas', 'heartCanvas', 'reticleCanvas'];
+        const pixelSize = 4; // Cada píxel del sprite es 4x4 en el canvas
+        const colors = {
+            player: ['#3498db', '#2c3e50', '#f39c12', '#ecf0f1', '#e74c3c', '#2ecc71', '#000000'],
+            enemy: ['#e74c3c', '#c0392b', '#2c3e50', '#f39c12', '#95a5a6', '#000000'],
+            food: ['#d35400', '#e67e22', '#f39c12', '#ecf0f1', '#000000'],
+            medicine: ['#e74c3c', '#ecf0f1', '#2c3e50', '#000000'],
+            heart: ['#e74c3c', '#c0392b', '#ecf0f1', '#000000'],
+            reticle: ['#ecf0f1', '#95a5a6', '#2c3e50', '#000000']
+        };
+        
+        let selectedColors = {};
+        
+        // Inicializar todos los canvas
+        canvases.forEach(canvasId => {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // Color inicial
+            const colorKey = canvasId.replace('Canvas', '');
+            selectedColors[canvasId] = colors[colorKey][0];
+            
+            // Crear paleta de colores
+            const colorPicker = document.getElementById(colorKey + 'Colors');
+            colors[colorKey].forEach((color, idx) => {
+                const div = document.createElement('div');
+                div.className = 'color-option' + (idx === 0 ? ' selected' : '');
+                div.style.backgroundColor = color;
+                div.onclick = () => {
+                    selectedColors[canvasId] = color;
+                    colorPicker.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected'));
+                    div.classList.add('selected');
+                };
+                colorPicker.appendChild(div);
+            });
+            
+            // Event listener para dibujar
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = Math.floor((e.clientX - rect.left) / pixelSize);
+                const y = Math.floor((e.clientY - rect.top) / pixelSize);
+                
+                ctx.fillStyle = selectedColors[canvasId];
+                ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+            });
+        });
+        
+        // Función para limpiar canvas
+        function clearCanvas(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        // Función para descargar sprite
+        function downloadSprite(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            
+            // Crear canvas temporal con el tamaño original (sin escalar)
+            const width = canvas.width / pixelSize;
+            const height = canvas.height / pixelSize;
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = width;
+            tempCanvas.height = height;
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            // Copiar píxeles al canvas temporal
+            const ctx = canvas.getContext('2d');
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const pixel = ctx.getImageData(x * pixelSize, y * pixelSize, 1, 1).data;
+                    tempCtx.fillStyle = `rgba(${pixel[0]}, ${pixel[1]}, ${pixel[2]}, ${pixel[3]/255})`;
+                    tempCtx.fillRect(x, y, 1, 1);
+                }
+            }
+            
+            // Descargar
+            tempCanvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+        
+        // ===== SPRITES POR DEFECTO =====
+        
+        function drawPlayerDefault() {
+            const canvas = document.getElementById('playerCanvas');
+            const ctx = canvas.getContext('2d');
+            clearCanvas('playerCanvas');
+            
+            // Cabeza (azul)
+            ctx.fillStyle = '#3498db';
+            ctx.fillRect(12*pixelSize, 8*pixelSize, 16*pixelSize, 12*pixelSize);
+            
+            // Ojos
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(15*pixelSize, 12*pixelSize, 3*pixelSize, 3*pixelSize);
+            ctx.fillRect(22*pixelSize, 12*pixelSize, 3*pixelSize, 3*pixelSize);
+            
+            // Cuerpo (marrón)
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(14*pixelSize, 20*pixelSize, 12*pixelSize, 8*pixelSize);
+            
+            // Piernas
+            ctx.fillRect(15*pixelSize, 28*pixelSize, 4*pixelSize, 6*pixelSize);
+            ctx.fillRect(21*pixelSize, 28*pixelSize, 4*pixelSize, 6*pixelSize);
+        }
+        
+        function drawEnemyDefault() {
+            const canvas = document.getElementById('enemyCanvas');
+            const ctx = canvas.getContext('2d');
+            clearCanvas('enemyCanvas');
+            
+            // Cabeza (rojo)
+            ctx.fillStyle = '#e74c3c';
+            ctx.fillRect(10*pixelSize, 6*pixelSize, 15*pixelSize, 12*pixelSize);
+            
+            // Ojos
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(13*pixelSize, 10*pixelSize, 3*pixelSize, 3*pixelSize);
+            ctx.fillRect(19*pixelSize, 10*pixelSize, 3*pixelSize, 3*pixelSize);
+            
+            // Cuerpo
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(12*pixelSize, 18*pixelSize, 11*pixelSize, 8*pixelSize);
+        }
+        
+        function drawFoodDefault() {
+            const canvas = document.getElementById('foodCanvas');
+            const ctx = canvas.getContext('2d');
+            clearCanvas('foodCanvas');
+            
+            // Carne (marrón/naranja)
+            ctx.fillStyle = '#d35400';
+            ctx.fillRect(5*pixelSize, 6*pixelSize, 10*pixelSize, 8*pixelSize);
+            
+            // Detalles
+            ctx.fillStyle = '#e67e22';
+            ctx.fillRect(6*pixelSize, 8*pixelSize, 8*pixelSize, 4*pixelSize);
+        }
+        
+        function drawMedicineDefault() {
+            const canvas = document.getElementById('medicineCanvas');
+            const ctx = canvas.getContext('2d');
+            clearCanvas('medicineCanvas');
+            
+            // Caja (blanca)
+            ctx.fillStyle = '#ecf0f1';
+            ctx.fillRect(5*pixelSize, 5*pixelSize, 10*pixelSize, 10*pixelSize);
+            
+            // Cruz (roja)
+            ctx.fillStyle = '#e74c3c';
+            ctx.fillRect(9*pixelSize, 7*pixelSize, 2*pixelSize, 6*pixelSize);
+            ctx.fillRect(7*pixelSize, 9*pixelSize, 6*pixelSize, 2*pixelSize);
+        }
+        
+        function drawHeartDefault() {
+            const canvas = document.getElementById('heartCanvas');
+            const ctx = canvas.getContext('2d');
+            clearCanvas('heartCanvas');
+            
+            // Corazón pixelado
+            const heart = [
+                [0,0,1,1,1,0,0,0,1,1,1,0,0],
+                [0,1,1,1,1,1,0,1,1,1,1,1,0],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [0,1,1,1,1,1,1,1,1,1,1,1,0],
+                [0,0,1,1,1,1,1,1,1,1,1,0,0],
+                [0,0,0,1,1,1,1,1,1,1,0,0,0],
+                [0,0,0,0,1,1,1,1,1,0,0,0,0],
+                [0,0,0,0,0,1,1,1,0,0,0,0,0],
+                [0,0,0,0,0,0,1,0,0,0,0,0,0]
+            ];
+            
+            ctx.fillStyle = '#e74c3c';
+            heart.forEach((row, y) => {
+                row.forEach((pixel, x) => {
+                    if (pixel === 1) {
+                        ctx.fillRect((x+5)*pixelSize, (y+5)*pixelSize, pixelSize, pixelSize);
+                    }
+                });
+            });
+        }
+        
+        function drawReticleDefault() {
+            const canvas = document.getElementById('reticleCanvas');
+            const ctx = canvas.getContext('2d');
+            clearCanvas('reticleCanvas');
+            
+            ctx.fillStyle = '#ecf0f1';
+            
+            // Cruz
+            ctx.fillRect(19*pixelSize, 15*pixelSize, 2*pixelSize, 10*pixelSize);
+            ctx.fillRect(15*pixelSize, 19*pixelSize, 10*pixelSize, 2*pixelSize);
+            
+            // Círculo (simulado con cuadrados)
+            const radius = 8;
+            for (let angle = 0; angle < 360; angle += 10) {
+                const x = 20 + Math.cos(angle * Math.PI / 180) * radius;
+                const y = 20 + Math.sin(angle * Math.PI / 180) * radius;
+                ctx.fillRect(x*pixelSize, y*pixelSize, pixelSize, pixelSize);
+            }
+        }
+        
+        // Dibujar sprites por defecto al cargar
+        window.onload = () => {
+            drawPlayerDefault();
+            drawEnemyDefault();
+            drawFoodDefault();
+            drawMedicineDefault();
+            drawHeartDefault();
+            drawReticleDefault();
+        };
+    </script>
+</body>
+</html>
